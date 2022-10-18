@@ -1,2 +1,2 @@
 export { handler as randomGet } from './random-get'
-export { handler as randomBreeds } from './breeds-get'
+export { handler as breedsGet } from './breeds-get'
