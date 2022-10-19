@@ -1,5 +1,4 @@
 import fetch from 'node-fetch'
-// import { handler } from '../random-get'
 import { handler } from '../lambdas/random-get'
 
 const mockedFetch: jest.Mock = fetch as any
