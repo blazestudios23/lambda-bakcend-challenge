@@ -1,4 +1,5 @@
 import fetch from 'node-fetch'
+import { AbortSignal } from 'abort-controller'
 import { Response, ErrorResponse } from './types'
 
 export interface DogResponse extends Response {
@@ -15,9 +16,9 @@ export interface DogAPI {
 
 const DOG_BREEDS_ENDPOINT = 'https://dog.ceo/api/breeds/'
 
-export async function handler(): Promise<DogResponse | ErrorResponse> {
+export async function handler(signal?: AbortSignal): Promise<DogResponse | ErrorResponse> {
   try {
-    const res = await fetch(`${DOG_BREEDS_ENDPOINT}list/all`)
+    const res = await fetch(`${DOG_BREEDS_ENDPOINT}list/all`, { signal })
     const payload: DogAPI = await res.json()
 
     const dogs = payload.message
