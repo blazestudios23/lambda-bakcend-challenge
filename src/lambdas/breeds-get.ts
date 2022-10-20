@@ -1,6 +1,8 @@
 import fetch from 'node-fetch'
-import { AbortSignal } from 'abort-controller'
+
 import { Response, ErrorResponse } from './types'
+
+const { AbortController } = globalThis
 
 export interface DogResponse extends Response {
   body: {
@@ -16,9 +18,13 @@ export interface DogAPI {
 
 const DOG_BREEDS_ENDPOINT = 'https://dog.ceo/api/breeds/'
 
-export async function handler(signal?: AbortSignal): Promise<DogResponse | ErrorResponse> {
+export async function handler(): Promise<DogResponse | ErrorResponse> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => {
+    controller.abort()
+  }, 150)
   try {
-    const res = await fetch(`${DOG_BREEDS_ENDPOINT}list/all`, { signal })
+    const res = await fetch(`${DOG_BREEDS_ENDPOINT}list/all`, { signal: controller.signal })
     const payload: DogAPI = await res.json()
 
     const dogs = payload.message
@@ -34,10 +40,19 @@ export async function handler(signal?: AbortSignal): Promise<DogResponse | Error
       statusCode: 200,
       body: { ...payload, message },
     }
-  } catch (err: unknown) {
+  } catch (error: unknown) {
+    // implementing error handling but get an error that AbortError doesn't exist in node fetch
+    // if (error instanceof AbortError) {
+    //   return {
+    //     statusCode: 504,
+    //     message: 'Time out error',
+    //   }
+    // }
     return {
       statusCode: 500,
       message: 'Something went wrong',
     }
+  } finally {
+    clearTimeout(timeout)
   }
 }

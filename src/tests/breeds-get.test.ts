@@ -1,5 +1,4 @@
 import fetch from 'node-fetch' // { AbortError }
-import AbortController from 'abort-controller'
 import { handler } from '../lambdas/breeds-get'
 
 const mockedFetch: jest.Mock = fetch as any
@@ -34,14 +33,17 @@ describe('breeds-get handler', () => {
   })
 })
 
-describe('Reject Test', () => {
+describe('Error responses', () => {
   const mockResponse = { message: 'Something went wrong', statusCode: 500 }
+
   it('returns error when request times out', async () => {
-    const controller = new AbortController()
-    setTimeout(() => {
-      controller.abort()
-    }, 150)
-    const response = await handler(controller.signal)
+    const response = await handler()
+    expect(response).toMatchObject(mockResponse)
+  })
+
+  it('returns error', async () => {
+    mockedFetch.mockRejectedValue({ status: 500, error: new Error('Internal Server Error') })
+    const response = await handler()
     expect(response).toMatchObject(mockResponse)
   })
 })
